@@ -22,13 +22,27 @@ class TransactionRepository extends AbstractRepository
 	public function createTransaction($account, $sum, $category) {
 		$timestamp = date("Y-m-d H:i:s");
 		$transaction = new Transaction(null, $account->id, $category, $sum, $timestamp);
-		print($sum);
-		$result = $this->dbConnection->executeQuery(
-			'INSERT INTO transaction (account, category, amount, date) VALUES (?, ?, ?, ?)',
-			[$transaction->account, $transaction->category, $transaction->amount, $transaction->timestamp]
-		);
 		
-		$transaction->id = $this->dbConnection->lastInsertId();
+		$this->dbConnection->beginTransaction();
+		try {
+			$this->dbConnection->executeQuery(
+				'INSERT INTO transaction (account, category, amount, date) VALUES (?, ?, ?, ?)',
+				[$transaction->account, $transaction->category, $transaction->amount, $transaction->timestamp]
+			);
+			
+			$this->dbConnection->executeQuery(
+				'UPDATE account SET balance = balance - ? WHERE id = ?',
+				[$transaction->amount, $transaction->account]
+			);
+			
+			$this->dbConnection->commit();
+			
+			$transaction->id = $this->dbConnection->lastInsertId();
+		}
+		catch (Exception $e) {
+			$conn->rollBack();
+			return null;
+		}
 		
 		return $transaction;
 	}
