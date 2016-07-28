@@ -18,5 +18,5 @@ $app['transactions.service'] = function ($app) {
 };
 
 $app['transactions.repository'] = function ($app) {
-	return new TransactionRepository($app['db']);
+	return new TransactionRepository($app['db'], $app['db.options']['dbname']);
 };

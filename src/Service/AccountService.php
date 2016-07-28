@@ -19,9 +19,9 @@ class AccountService
 		return $this->accountRepository->getAccounts($user);
 	}
 	
-	public function getAccountsByProperty(User $user, $property, $value)
+	public function getAccountsByProperty(User $user, $params)
 	{
-		return $this->accountRepository->getAccountsByProperty($user, $property, $value);
+		return $this->accountRepository->getAccountsByProperty($user, $params);
 	}
 	
 	public function getAccountByID(User $user, $id) 

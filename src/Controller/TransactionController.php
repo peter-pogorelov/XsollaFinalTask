@@ -68,7 +68,12 @@ class TransactionController extends AbstractController
 		if($sum !== null && $category !== null) {
 			if($account !== null) {
 				if(($category = $this->categoryService->getCategoryByName($category)) !== null) {
-					return new JsonResponse($this->transactionService->createTransaction($account, $sum, $category->name));
+					$transaction = $this->transactionService->createTransaction($account, $sum, $category->name);
+					if($transaction !== null){
+						return new JsonResponse($transaction);
+					} else {
+						return $this->createErrorResponse('Error during transaction execution.');
+					}
 				} else {
 					return $this->createErrorResponse('Category is not registered!');
 				}

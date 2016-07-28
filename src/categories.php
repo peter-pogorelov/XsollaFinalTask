@@ -15,5 +15,5 @@ $app['categories.service'] = function ($app) {
 };
 
 $app['categories.repository'] = function($app) {
-	return new CategoryRepository($app['db']);
+	return new CategoryRepository($app['db'], $app['db.options']['dbname']);
 };

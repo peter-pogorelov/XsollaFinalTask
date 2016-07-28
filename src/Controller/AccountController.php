@@ -22,11 +22,10 @@ class AccountController extends AbstractController
             return $this->createUnathorizedResponse();
         }
 		
-		if($request->get('name') !== null) {
-			return new JsonResponse($this->accountService->getAccountsByProperty($user, 'name', $request->get('name')));
-		}
-		else if($request->get('currency') !== null) {
-			return new JsonResponse($this->accountService->getAccountsByProperty($user, 'currency', $request->get('currency')));
+		$params = $request->query->all();
+		
+		if(sizeof($params) !== 0) {
+			return new JsonResponse($this->accountService->getAccountsByProperty($user, $params));
 		}
 		
 		return new JsonResponse($this->accountService->getAccounts($user));

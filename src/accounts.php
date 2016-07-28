@@ -14,5 +14,5 @@ $app['accounts.service'] = function ($app) {
 };
 
 $app['accounts.repository'] = function($app) {
-	return new AccountRepository($app['db']);
+	return new AccountRepository($app['db'], $app['db.options']['dbname']);
 };

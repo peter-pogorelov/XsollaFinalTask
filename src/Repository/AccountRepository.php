@@ -8,7 +8,8 @@ class AccountRepository extends AbstractRepository
 {
 	public function getAccounts(User $user){
 		$accounts = $this->dbConnection->fetchAll(
-            'SELECT id, currency, balance, user, name FROM account WHERE user = ?', [$user->id]
+            'SELECT id, currency, balance, user, name FROM account WHERE user = ?', 
+			[$user->id]
         );
 		
 		return !is_null($accounts[0]) ? array_map(function($account){
@@ -16,17 +17,35 @@ class AccountRepository extends AbstractRepository
 		}, $accounts) : array();
 	}
 	
-	public function getAccountsByProperty(User $user, $property, $value){
-		$type = gettype($property);
+	public function getAccountsByProperty(User $user, $params){
+		$cols = $this->getSchema('account');
 		
-		$accounts = $this->dbConnection->fetchAll(
-            'SELECT id, currency, balance, user, name FROM account WHERE user = ? AND ? = ?', 
-			[$user->id, $property, $value]
-        );
+		$query = 'SELECT * FROM account WHERE user = ' . $user->id . ' AND ';
+		$types = [];
 		
-		return !is_null($accounts['id']) ? array_map(function($account){
-			return new Account($account["id"], $account["user"], $account["currency"], $account["balance"], $account["name"]);
-		}, $accounts) : array();
+		if(count($cols) !== 0){
+			$exist = false;
+			foreach($params as $key=>$value){
+				if(in_array($key, array_keys($cols))) {
+					$exist = true;
+					$query .= $key . '=' . AbstractRepository::formatType($cols[$key], $value) . ' AND ';
+					
+				} else {
+					return array();
+				}
+			}
+			
+			if($exist){
+				$query = chop(trim($query, ' '), 'AND');
+				$accounts = $this->dbConnection->fetchAll($query);
+				
+				return !is_null($accounts[0]) ? array_map(function($account){
+					return new Account($account["id"], $account["user"], $account["currency"], $account["balance"], $account["name"]);
+				}, $accounts) : array();
+			}
+		}
+		
+		return array();
 	}
 	
 	public function getAccountByID(User $user, $id) {
@@ -39,7 +58,7 @@ class AccountRepository extends AbstractRepository
 								$accounts['balance'], $accounts['name']);
 		}
 		
-		return null;
+		return array();
 	}
 	
 	public function deleteAccountByID(User $user, $id) {
