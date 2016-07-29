@@ -7,6 +7,7 @@ require __DIR__ . '/../src/users.php';
 require __DIR__ . '/../src/accounts.php';
 require __DIR__ . '/../src/categories.php';
 require __DIR__ . '/../src/transactions.php';
+require __DIR__ . '/../src/reports.php';
 
 $app->register(new DoctrineServiceProvider(), [
     'db.options' => [
@@ -44,6 +45,8 @@ $routes->delete('/users/me/accounts/{id}', 'accounts.controller:deleteAccountByI
 $routes->get('/users/me/accounts/{id}/transactions', 'transactions.controller:getTransactions');
 $routes->post('/users/me/accounts/{id}/transactions', 'transactions.controller:createTransaction');
 $routes->delete('/users/me/accounts/{id}/transactions/{trans}', 'transactions.controller:deleteTransaction');
+
+$routes->get('/users/me/reports', 'reports.controller:getReport');
 
 $routes->get('/categories', 'categories.controller:getCategories');
 
