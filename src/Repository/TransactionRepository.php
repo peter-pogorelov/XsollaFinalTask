@@ -62,8 +62,8 @@ class TransactionRepository extends AbstractRepository
 				);
 				
 				$this->dbConnection->executeQuery(
-					'UPDATE account SET balance = balance + ?',
-					[$transaction['amount']]
+					'UPDATE account SET balance = balance + ? WHERE id = ?',
+					[$transaction['amount'], $account->id]
 				);
 				
 				$this->dbConnection->commit();
@@ -79,18 +79,43 @@ class TransactionRepository extends AbstractRepository
 	}
 	
 	public function updateTransaction($id, $transaction) {
-		$this->dbConnection->executeQuery(
-			'UPDATE transaction SET amount = IFNULL(?, amount), 
-			category = IFNULL(?, category), date = IFNULL(?, date) WHERE id=?',
-			[$transaction->amount, $transaction->category, $transaction->date, $id]
-		);
-		
-		$updated = $this->dbConnection->fetchAssoc(
+		//Using atomic operation to execute related queries
+		$old = $this->dbConnection->fetchAssoc(
 			'SELECT * FROM transaction WHERE id=?',
 			[$id]
 		);
 		
-		return !is_null($updated['id']) ? new Transaction($updated['id'], $updated['account'], $updated['category'],
-			$updated['amount'], $updated['date']) : null;
+		if(!is_null($old)){
+			$this->dbConnection->beginTransaction();
+			try{
+				$this->dbConnection->executeQuery(
+					'UPDATE transaction SET amount = IFNULL(?, amount), 
+					category = IFNULL(?, category), date = IFNULL(?, date) WHERE id=?',
+					[$transaction->amount, $transaction->category, $transaction->date, $id]
+				);
+				
+				$delta =  $transaction->amount - $old['amount'];
+				
+				$this->dbConnection->executeQuery(
+					'UPDATE account SET balance = balance-? WHERE id = ?',
+					[$delta, $old['account']]
+				);
+				
+				$this->dbConnection->commit();
+			}
+			catch(Exception $e) {
+				$this->dbConnection->rollBack();
+			}
+			
+			$updated = $this->dbConnection->fetchAssoc(
+				'SELECT * FROM transaction WHERE id=?',
+				[$id]
+			);
+			
+			return !is_null($updated['id']) ? new Transaction($updated['id'], $updated['account'], $updated['category'],
+				$updated['amount'], $updated['date']) : null;
+		}
+		
+		return null;
 	}
 }
