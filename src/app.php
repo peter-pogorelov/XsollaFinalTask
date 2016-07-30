@@ -45,6 +45,7 @@ $routes->delete('/users/me/accounts/{id}', 'accounts.controller:deleteAccountByI
 $routes->get('/users/me/accounts/{id}/transactions', 'transactions.controller:getTransactions');
 $routes->post('/users/me/accounts/{id}/transactions', 'transactions.controller:createTransaction');
 $routes->delete('/users/me/accounts/{id}/transactions/{trans}', 'transactions.controller:deleteTransaction');
+$routes->put('/users/me/accounts/{id}/transactions/{trans}', 'transactions.controller:updateTransaction');
 
 $routes->get('/users/me/reports', 'reports.controller:getReport');
 

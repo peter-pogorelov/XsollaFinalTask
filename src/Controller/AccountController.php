@@ -78,6 +78,6 @@ class AccountController extends AbstractController
 			}
 		}
 		
-		return new $this->createErrorResponse('Name and currency must be specified!');
+		return $this->createErrorResponse('Name and currency must be specified!');
 	}
 }

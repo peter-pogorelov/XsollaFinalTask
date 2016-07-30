@@ -14,6 +14,7 @@ abstract class AbstractRepository
 		$this->dbName = $dbName;
     }
 	
+	//Get names of columns of current table
 	public function getSchema($table){
 		$res = $this->dbConnection->fetchAll(
 			"SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND TABLE_SCHEMA = ?",
@@ -30,6 +31,7 @@ abstract class AbstractRepository
 		return $assoc;
 	}
 	
+	//format type according to SQL syntax
 	public static function formatType($type, $param) {
 		switch($type) {
 			case 'string': case 'varchar':

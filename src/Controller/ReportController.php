@@ -29,7 +29,7 @@ class ReportController extends AbstractController
         }
 		
 		$params = $request->query->all(); //year, month, day, category(str), account(str)
-		$report = $this->reportService->getReport($user, $params);
+		$report = $this->reportService->getReport($user, $params); //TODO: updated transactions is not recorded.
 		if(is_null($report)) {
 			$report = $this->reportService->createReport($user, $params);
 		}

@@ -23,11 +23,12 @@ class TransactionRepository extends AbstractRepository
 		$timestamp = date("Y-m-d H:i:s");
 		$transaction = new Transaction(null, $account->id, $category, $sum, $timestamp);
 		
+		//Using atomic operation to execute related queries
 		$this->dbConnection->beginTransaction();
 		try {
 			$this->dbConnection->executeQuery(
 				'INSERT INTO transaction (account, category, amount, date) VALUES (?, ?, ?, ?)',
-				[$transaction->account, $transaction->category, $transaction->amount, $transaction->timestamp]
+				[$transaction->account, $transaction->category, $transaction->amount, $transaction->date]
 			);
 			
 			$this->dbConnection->executeQuery(
@@ -37,10 +38,10 @@ class TransactionRepository extends AbstractRepository
 			
 			$this->dbConnection->commit();
 			
-			$transaction->id = $this->dbConnection->lastInsertId();
+			$transaction->id = $this->dbConnection->lastInsertId(); //By some reason it doesnt work.
 		}
 		catch (Exception $e) {
-			$conn->rollBack();
+			$this->dbConnection->rollBack();
 			return null;
 		}
 		
@@ -48,10 +49,48 @@ class TransactionRepository extends AbstractRepository
 	}
 	
 	public function deleteTransaction($account, $id) {
-		$stmt = $this->dbConnection->executeQuery(
-			'DELETE FROM transaction WHERE account = ? AND id = ?', [$account->id, $id]
+		$transaction = $this->dbConnection->fetchAssoc(
+			'SELECT * FROM transaction WHERE account = ? AND id = ?', [$account->id, $id]
 		);
 		
-		return $stmt->rowCount() === 0 ? false : true;
+		if(!is_null($transaction['amount'])) {
+			//Using atomic operation to execute related queries
+			$this->dbConnection->beginTransaction();
+			try{
+				$this->dbConnection->executeQuery(
+					'DELETE FROM transaction WHERE account = ? AND id = ?', [$account->id, $id]
+				);
+				
+				$this->dbConnection->executeQuery(
+					'UPDATE account SET balance = balance + ?',
+					[$transaction['amount']]
+				);
+				
+				$this->dbConnection->commit();
+			}
+			catch(Exception $e) {
+				$this->dbConnection->rollBack();
+			}
+		} else {
+			return false;
+		}
+			
+		return true;
+	}
+	
+	public function updateTransaction($id, $transaction) {
+		$this->dbConnection->executeQuery(
+			'UPDATE transaction SET amount = IFNULL(?, amount), 
+			category = IFNULL(?, category), date = IFNULL(?, date) WHERE id=?',
+			[$transaction->amount, $transaction->category, $transaction->date, $id]
+		);
+		
+		$updated = $this->dbConnection->fetchAssoc(
+			'SELECT * FROM transaction WHERE id=?',
+			[$id]
+		);
+		
+		return !is_null($updated['id']) ? new Transaction($updated['id'], $updated['account'], $updated['category'],
+			$updated['amount'], $updated['date']) : null;
 	}
 }

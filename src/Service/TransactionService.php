@@ -27,4 +27,9 @@ class TransactionService
 	{
 		return $this->transactionRepository->deleteTransaction($account, $id);
 	}
+	
+	public function updateTransaction($account, $id, $params) {
+		$transaction = new Transaction($id, $account, $params['category'], $params['amount'], $params['date']);
+		return $this->transactionRepository->updateTransaction($id, $transaction);
+	}
 }

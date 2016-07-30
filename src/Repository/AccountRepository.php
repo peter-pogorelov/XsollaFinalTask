@@ -17,6 +17,7 @@ class AccountRepository extends AbstractRepository
 		}, $accounts) : array();
 	}
 	
+	//$params contains filters for accounts
 	public function getAccountsByProperty(User $user, $params){
 		$cols = $this->getSchema('account');
 		
@@ -74,7 +75,8 @@ class AccountRepository extends AbstractRepository
 			'SELECT * FROM finance.account WHERE user=? AND name=?',
 			[$account->user, $account->name]
 		);
-
+		
+		//name is not unique so checking is account for this user already exists is important
 		if($row['id'] === null) {			
 			$stmt = $this->dbConnection->executeQuery(
 				'INSERT INTO account (currency, balance, user, name) VALUES (?, ?, ?, ?)', 

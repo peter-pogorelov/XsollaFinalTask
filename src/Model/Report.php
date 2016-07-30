@@ -20,7 +20,7 @@ class Report
 
     public function __construct(
 		$id, $day, $month, $year, $user, $account, $category,
-		$sum, $min_amount, $max_amount, $avg_amount
+		$sum, $start_amount, $end_amount, $avg_amount
 	)
     {
 		$this->id = $id;

@@ -70,6 +70,7 @@ class TransactionController extends AbstractController
 				if(($category = $this->categoryService->getCategoryByName($category)) !== null) {
 					$transaction = $this->transactionService->createTransaction($account, $sum, $category->id);
 					if($transaction !== null){
+						$transaction->category = $category->name;
 						return new JsonResponse($transaction);
 					} else {
 						return $this->createErrorResponse('Error during transaction execution.');
@@ -98,6 +99,27 @@ class TransactionController extends AbstractController
 		if($account !== null) {
 			if($this->transactionService->deleteTransaction($account, intval($trans))){
 				return new JsonResponse(['subject'=>'deleted']);
+			} else {
+				return $this->createErrorResponse('Record is not found!');
+			}
+		} else {
+			return $this->createErrorResponse('Account id is invalid!');
+		}
+	}
+	
+	public function updateTransaction(Request $request, $id, $trans) {
+		$user = $this->getUserByAuthorization($request);
+        if ($user === false) {
+            return $this->createUnathorizedResponse();
+        }
+		
+		$account = $this->accountService->getAccountByID($user, intval($id));
+		$params = $request->request->all();
+		
+		if($account !== null) {
+			$updated = $this->transactionService->updateTransaction($account, intval($trans), $params);
+			if(!is_null($updated)){
+				return new JsonResponse($updated);
 			} else {
 				return $this->createErrorResponse('Record is not found!');
 			}

@@ -32,7 +32,7 @@ CREATE TABLE `transaction` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `Report` (
-  `Day` varchar(45) DEFAULT NULL,
+  `Day` varchar(45) DEFAULT '',
   `User` int(11) NOT NULL,
   `Account` varchar(45) DEFAULT NULL,
   `Category` varchar(45) DEFAULT NULL,
@@ -45,4 +45,3 @@ CREATE TABLE `Report` (
   `Id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
-
